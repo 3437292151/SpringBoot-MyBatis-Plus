@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yu.dao.McrTDictDao" >
+  <resultMap id="BaseResultMap" type="com.yu.domain.McrTDict" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="dict_code" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="dict_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="dict_desc" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="dict_status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="def_user" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="def_dt" jdbcType="DATE" javaType="java.time.LocalDate" />
+      <arg column="upd_user" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="upd_dt" jdbcType="DATE" javaType="java.time.LocalDate" />
+      <arg column="def_user_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="upd_user_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, dict_code, dict_name, dict_desc, dict_status, def_user, def_dt, upd_user, upd_dt, def_user_name, upd_user_name
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from mcr_t_dict
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+      from mcr_t_dict
+      order by def_dt desc
+  </select>
+  <select id="selectByCols" resultMap="BaseResultMap" parameterType="com.yu.domain.McrTDict">
+      select
+      <include refid="Base_Column_List" />
+      from mcr_t_dict
+      <where>
+          <if test="dictCode!=null">
+              and dict_code like  CONCAT('%',#{dictCode,jdbcType=VARCHAR},'%')
+          </if>
+          <if test="dictName!=null">
+              and dict_name like CONCAT('%',#{dictName,jdbcType=VARCHAR},'%')
+          </if>
+          <if test="dictStatus!=null">
+              and dict_status = #{dictStatus,jdbcType=INTEGER}
+          </if>
+      </where>
+      order by def_dt desc
+
+  </select>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.util.List">
+        select
+        <include refid="Base_Column_List" />
+        from mcr_t_dict
+        where id in
+        <foreach collection="list" item="mcr" open="(" separator="," close=")">
+            #{mcr.id}
+        </foreach>
+    </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from mcr_t_dict
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="batchDelete" parameterType="java.util.List">
+    delete from mcr_t_dict
+    where id in
+    <foreach collection="list" item="mcr" open="(" separator="," close=")">
+        #{mcr.id}
+    </foreach>
+  </delete>
+  <insert id="insert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
+    insert into mcr_t_dict
+      (id,dict_code, dict_name, dict_desc, dict_status, def_user,def_dt, def_user_name, upd_user, upd_user_name,upd_dt)
+    values
+    <foreach collection="list" item="mcr" separator=",">
+      ((SELECT UUID() AS id),#{mcr.dictCode},#{mcr.dictName},#{mcr.dictDesc},#{mcr.dictStatus},#{mcr.defUser},now(),#{mcr.defUserName},#{mcr.updUser},#{mcr.updUserName},now())
+    </foreach>
+  </insert>
+  <insert id="insertSelective" parameterType="com.yu.domain.McrTDict" >
+    insert into mcr_t_dict
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="dictCode != null" >
+        dict_code,
+      </if>
+      <if test="dictName != null" >
+        dict_name,
+      </if>
+      <if test="dictDesc != null" >
+        dict_desc,
+      </if>
+      <if test="dictStatus != null" >
+        dict_status,
+      </if>
+      <if test="defUser != null" >
+        def_user,
+      </if>
+      <if test="defDt != null" >
+        def_dt,
+      </if>
+      <if test="updUser != null" >
+        upd_user,
+      </if>
+      <if test="updDt != null" >
+        upd_dt,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCode != null" >
+        #{dictCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictName != null" >
+        #{dictName,jdbcType=VARCHAR},
+      </if>
+      <if test="dictDesc != null" >
+        #{dictDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictStatus != null" >
+        #{dictStatus,jdbcType=INTEGER},
+      </if>
+      <if test="defUser != null" >
+        #{defUser,jdbcType=VARCHAR},
+      </if>
+      <if test="defDt != null" >
+        #{defDt,jdbcType=DATE},
+      </if>
+      <if test="updUser != null" >
+        #{updUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updDt != null" >
+        #{updDt,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.yu.domain.McrTDict" >
+    update mcr_t_dict
+    <set >
+      <if test="dictCode != null" >
+        dict_code = #{dictCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictName != null" >
+        dict_name = #{dictName,jdbcType=VARCHAR},
+      </if>
+      <if test="dictDesc != null" >
+        dict_desc = #{dictDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictStatus != null" >
+        dict_status = #{dictStatus,jdbcType=INTEGER},
+      </if>
+      <if test="defUser != null" >
+        def_user = #{defUser,jdbcType=VARCHAR},
+      </if>
+      <if test="defDt != null" >
+        def_dt = #{defDt,jdbcType=DATE},
+      </if>
+      <if test="updUser != null" >
+        upd_user = #{updUser,jdbcType=VARCHAR},
+      </if>
+      <if test="updDt != null" >
+        upd_dt = #{updDt,jdbcType=DATE},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.yu.domain.McrTDict" >
+    update mcr_t_dict
+    set dict_code = #{dictCode,jdbcType=VARCHAR},
+      dict_name = #{dictName,jdbcType=VARCHAR},
+      dict_desc = #{dictDesc,jdbcType=VARCHAR},
+      dict_status = #{dictStatus,jdbcType=INTEGER},
+      def_user = #{defUser,jdbcType=VARCHAR},
+      def_dt = #{defDt,jdbcType=DATE},
+      upd_user = #{updUser,jdbcType=VARCHAR},
+      upd_dt = #{updDt,jdbcType=DATE}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
+    <foreach collection="list" separator=";" item="mcr" >
+        update mcr_t_dict
+        <set>
+            <if test="mcr.dictCode != null">
+                dict_code = #{mcr.dictCode},
+            </if>
+            <if test="mcr.dictName != null">
+                dict_name = #{mcr.dictName},
+            </if>
+            <if test="mcr.dictDesc != null">
+                dict_desc = #{mcr.dictDesc},
+            </if>
+            <if test="mcr.dictStatus != null">
+                dict_status = #{mcr.dictStatus},
+            </if>
+            <if test="mcr.updUser != null">
+                upd_user = #{mcr.updUser},
+            </if>
+            <if test="mcr.updUserName != null">
+                upd_user_name = #{mcr.updUserName},
+            </if>
+            upd_dt = now()
+        </set>
+       where   id = #{mcr.id}
+    </foreach>
+  </update>
+</mapper>
