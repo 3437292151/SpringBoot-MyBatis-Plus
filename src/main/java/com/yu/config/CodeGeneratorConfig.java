@@ -1,6 +1,7 @@
 package com.yu.config;
 
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
+import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
@@ -165,13 +166,18 @@ public class CodeGeneratorConfig {
         return templateConfig;
    }
 
+    @Bean
+    public PaginationInterceptor paginationInterceptor() {
+        return new PaginationInterceptor();
+    }
+
    @Bean
    public StrategyConfig getStrategyConfig(){
        // 策略配置
        StrategyConfig strategy = new StrategyConfig();
        strategy.setNaming(NamingStrategy.underline_to_camel);
        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
-       strategy.setSuperEntityClass("com.yu.domain.SystemEntity");
+       strategy.setSuperEntityClass("com.yu.domain.PrimaryKey");
        strategy.setSuperServiceClass("com.yu.service.IService");
        strategy.setSuperServiceImplClass("com.yu.service.impl.ServiceImpl");
        strategy.setEntityLombokModel(true);
@@ -179,7 +185,7 @@ public class CodeGeneratorConfig {
        // 公共父类
        //strategy.setSuperControllerClass("com.baomidou.ant.common.BaseController");
        // 写于父类中的公共字段
-       strategy.setSuperEntityColumns("id","def_user", "def_user_name","def_dt","upd_user","upd_user_name","upd_dt");
+       strategy.setSuperEntityColumns("id","def_user", "def_user_name","upd_user","upd_user_name");
        strategy.setInclude("mcr_t_dict_item");
        strategy.setControllerMappingHyphenStyle(true);
        //strategy.setTablePrefix(pc.getModuleName() + "_");

@@ -9,36 +9,36 @@ import com.baomidou.mybatisplus.extension.service.additional.query.impl.QueryCha
 import com.baomidou.mybatisplus.extension.service.additional.update.impl.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.additional.update.impl.UpdateChainWrapper;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.yu.domain.PrimaryKey;
 import com.yu.service.mapper.EntityMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface IService<D, E> {
+public interface IService<D, E extends PrimaryKey> {
 
-    boolean save(D var1);
+    D save(D var1);
 
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    default boolean saveBatch(Collection<D> entityList) {
+    default List<D> saveBatch(List<D> entityList) {
         return this.saveBatch(entityList, 1000);
     }
 
-    boolean saveBatch(Collection<D> var1, int var2);
+    List<D> saveBatch(List<D> var1, int var2);
 
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    default boolean saveOrUpdateBatch(Collection<D> entityList) {
+    default List<D> saveOrUpdateBatch(List<D> entityList) {
         return this.saveOrUpdateBatch(entityList, 1000);
     }
 
-    boolean saveOrUpdateBatch(Collection<D> var1, int var2);
+    List<D> saveOrUpdateBatch(List<D> var1, int var2);
 
     boolean removeById(Serializable var1);
 
@@ -46,9 +46,9 @@ public interface IService<D, E> {
 
     boolean remove(Wrapper<D> var1);
 
-    boolean removeByIds(Collection<? extends Serializable> var1);
+    boolean removeByIds(List<? extends Serializable> var1);
 
-    boolean updateById(D var1);
+    D updateById(D var1);
 
     boolean update(D var1, Wrapper<D> var2);
 
@@ -59,19 +59,19 @@ public interface IService<D, E> {
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    default boolean updateBatchById(Collection<D> entityList) {
+    default boolean updateBatchById(List<D> entityList) {
         return this.updateBatchById(entityList, 1000);
     }
 
-    boolean updateBatchById(Collection<D> var1, int var2);
+    boolean updateBatchById(List<D> var1, int var2);
 
-    boolean saveOrUpdate(D var1);
+    D saveOrUpdate(D var1);
 
     D getById(Serializable var1);
 
-    Collection<D> listByIds(Collection<? extends Serializable> var1);
+    List<D> listByIds(List<? extends Serializable> var1);
 
-    Collection<D> listByMap(Map<String, Object> var1);
+    List<D> listByMap(Map<String, Object> var1);
 
     default D getOne(Wrapper<D> queryWrapper) {
         return this.getOne(queryWrapper, true);

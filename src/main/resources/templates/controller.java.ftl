@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 <#if superControllerClassPackage??>
@@ -76,8 +77,8 @@ public class ${table.controllerName} {
     * 根据ID查找数据
     */
     @GetMapping("/find")
-    public ResponseEntity<${entity}DTO> find(@RequestParam("id") Long id){
-        ${entity}DTO result = targetService.selectById(id);
+    public ResponseEntity<${entity}DTO> find(@RequestParam("id") String id){
+        ${entity}DTO result = targetService.getById(id);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -86,8 +87,8 @@ public class ${table.controllerName} {
     * 添加数据
     */
     @PostMapping(value = "/add")
-    public ResponseEntity<Void> addItem(@RequestBody ${entity}DTO ${entity}DTO){
-        boolean isOk = targetService.save(${entity}DTO);
+    public ResponseEntity<${entity}DTO> addItem(@RequestBody ${entity}DTO ${entity}DTO)throws URISyntaxException {
+        ${entity}DTO result = targetService.save(${entity}DTO);
         return ResponseEntity.created(new URI("/api/mstDesignSelects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -98,8 +99,8 @@ public class ${table.controllerName} {
     * 更新数据
     */
     @PutMapping(value = "/update")
-    public ResponseEntity<Void> updateItem(@RequestBody ${entity}DTO ${entity}DTO){
-        boolean isOk = targetService.saveOrUpdate(${entity}DTO);
+    public ResponseEntity<${entity}DTO> updateItem(@RequestBody ${entity}DTO ${entity}DTO)throws URISyntaxException {
+        ${entity}DTO result = targetService.saveOrUpdate(${entity}DTO);
         return ResponseEntity.created(new URI("/api/mstDesignSelects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -114,5 +115,5 @@ public class ${table.controllerName} {
         boolean isOk = targetService.removeByIds(ids);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, ids.toString())).build();
     }
-
+}
 </#if>

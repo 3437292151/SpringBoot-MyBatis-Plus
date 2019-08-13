@@ -10,6 +10,11 @@ spring:
                 prepStmtCacheSize: 250
                 prepStmtCacheSqlLimit: 2048
                 useServerPrepStmts: true
+logging:
+  level:
+    org.mybatis: debug
+    com.yu.dao: debug
+
 mybatis:
     mapper-locations: classpath:mappers/*.xml
     type-aliases-package: com.yu.domain

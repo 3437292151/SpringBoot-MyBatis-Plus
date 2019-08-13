@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class McrTDictDTO implements Serializable {
@@ -22,11 +23,11 @@ public class McrTDictDTO implements Serializable {
 
     private String defUser;
 
-    private LocalDate defDt;
+    private LocalDateTime defDt;
 
     private String updUser;
 
-    private LocalDate updDt;
+    private LocalDateTime updDt;
 
     private String defUserName;
 

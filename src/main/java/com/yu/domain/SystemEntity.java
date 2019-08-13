@@ -1,5 +1,7 @@
 package com.yu.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,28 +13,29 @@ import java.util.UUID;
  * @Description: 系统实体
  */
 @Data
-public class SystemEntity {
-
-    private String id;
+public class SystemEntity extends PrimaryKey {
 
     private String defUser;
 
     private String defUserName;
 
+    @JsonFormat(pattern = "YYYY-MM-dd HH:mm:SS")
     private LocalDateTime defDt;
+
+    @JsonFormat(pattern = "YYYY-MM-dd HH:mm:SS")
+    private LocalDateTime updDt;
 
     private String updUser;
 
     private String updUserName;
 
-    private LocalDateTime updDt;
-
+    @TableField("s_dept")
     private String sdept;
 
+    @TableField("s_cmpy")
     private String scmpy;
 
     public SystemEntity(String id, String defUser, String defUserName, LocalDateTime defDt, String updUser, String updUserName, LocalDateTime updDt, String sdept, String scmpy) {
-        this.id = id;
         this.defUser = defUser;
         this.defUserName = defUserName;
         this.defDt = defDt;
@@ -49,17 +52,7 @@ public class SystemEntity {
 
     public SystemEntity(String id) {
         super();
-        this.id = id;
+        super.setId(id);
     }
 
-    public SystemEntity setUUID(){
-        this.setId(UUID.randomUUID().toString());
-        return this;
-    }
-
-    public SystemEntity setTime(){
-        this.setDefDt(LocalDateTime.now());
-        this.setUpdDt(LocalDateTime.now());
-        return this;
-    }
 }

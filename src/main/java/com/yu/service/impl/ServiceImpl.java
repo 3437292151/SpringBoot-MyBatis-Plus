@@ -9,13 +9,16 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.core.toolkit.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.yu.domain.PrimaryKey;
 import com.yu.service.IService;
 import com.yu.service.mapper.EntityMapper;
+import com.yu.web.rest.util.PageUtil;
 import org.apache.ibatis.binding.MapperMethod.ParamMap;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -26,11 +29,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<D, E>, D, E> implements IService<D, E> {
+public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<D, E>, D, E extends PrimaryKey> implements IService<D, E> {
     protected Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
@@ -72,22 +78,27 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
         return SqlHelper.table(this.currentModelClass()).getSqlStatement(sqlMethod.getMethod());
     }
 
-    public boolean save(D entity) {
-        return this.retBool(Integer.valueOf(this.baseMapper.insert(this.entityMapper.toEntity(entity))));
+    public D save(D dto) {
+        E entity = this.entityMapper.toEntity(dto);
+        entity.setUUID().setTime();
+        this.baseMapper.insert(entity);
+        return this.entityMapper.toDto(entity);
     }
 
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    public boolean saveBatch(Collection<D> entityList, int batchSize) {
+    public List<D> saveBatch(List<D> dtoList, int batchSize) {
         String sqlStatement = this.sqlStatement(SqlMethod.INSERT_ONE);
         SqlSession batchSqlSession = this.sqlSessionBatch();
         Throwable var5 = null;
+        List<E> entityList = this.entityMapper.toEntity(dtoList);
+        entityList.forEach(e -> e.setUUID().setTime());
         try {
             int i = 0;
 
             for(Iterator var7 = entityList.iterator(); var7.hasNext(); ++i) {
-                E anEntityList = this.entityMapper.toEntity( (D) var7.next());
+                E anEntityList = (E) var7.next();
                 batchSqlSession.insert(sqlStatement, anEntityList);
                 if(i >= 1 && i % batchSize == 0) {
                     batchSqlSession.flushStatements();
@@ -95,7 +106,7 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
             }
 
             batchSqlSession.flushStatements();
-            return true;
+            return this.entityMapper.toDto(entityList);
         } catch (Throwable var16) {
             var5 = var16;
             throw var16;
@@ -118,26 +129,26 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    public boolean saveOrUpdate(D entity) {
-        if(null == entity) {
-            return false;
+    public D saveOrUpdate(D dto) {
+        if(null == dto) {
+            return dto;
         } else {
-            E e = this.entityMapper.toEntity(entity);
-            Class<?> cls = e.getClass();
+            E entity = this.entityMapper.toEntity(dto);
+            Class<?> cls = entity.getClass();
             TableInfo tableInfo = TableInfoHelper.getTableInfo(cls);
             Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!", new Object[0]);
             String keyProperty = tableInfo.getKeyProperty();
             Assert.notEmpty(keyProperty, "error: can not execute. because can not find column for id from entity!", new Object[0]);
             Object idVal = ReflectionKit.getMethodValue(cls, entity, tableInfo.getKeyProperty());
-            return !StringUtils.checkValNull(idVal) && !Objects.isNull(this.getById((Serializable)idVal))?this.updateById(entity):this.save(entity);
+            return !StringUtils.checkValNull(idVal) && !Objects.isNull(this.getById((Serializable)idVal))?this.updateById(dto):this.save(dto);
         }
     }
 
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    public boolean saveOrUpdateBatch(Collection<D> entityList, int batchSize) {
-        Assert.notEmpty(entityList, "error: entityList must not be empty", new Object[0]);
+    public List<D> saveOrUpdateBatch(List<D> dtoList, int batchSize) {
+        Assert.notEmpty(dtoList, "error: dtoList must not be empty", new Object[0]);
         Class<?> cls = this.currentModelClass();
         TableInfo tableInfo = TableInfoHelper.getTableInfo(cls);
         Assert.notNull(tableInfo, "error: can not execute. because can not find cache of TableInfo for entity!", new Object[0]);
@@ -146,17 +157,20 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
         SqlSession batchSqlSession = this.sqlSessionBatch();
         Throwable var7 = null;
 
+        List<E> entityList = this.entityMapper.toEntity(dtoList);
         try {
             int i = 0;
 
             for(Iterator var9 = entityList.iterator(); var9.hasNext(); ++i) {
-                E entity = this.entityMapper.toEntity((D) var9.next());
+                E entity = (E) var9.next();
                 Object idVal = ReflectionKit.getMethodValue(cls, entity, keyProperty);
                 if(!StringUtils.checkValNull(idVal) && !Objects.isNull(this.getById((Serializable)idVal))) {
                     ParamMap<E> param = new ParamMap();
+                    entity.setUpdDt(LocalDateTime.now());
                     param.put("et", entity);
                     batchSqlSession.update(this.sqlStatement(SqlMethod.UPDATE_BY_ID), param);
                 } else {
+                    entity.setUUID().setTime();
                     batchSqlSession.insert(this.sqlStatement(SqlMethod.INSERT_ONE), entity);
                 }
 
@@ -166,7 +180,7 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
             }
 
             batchSqlSession.flushStatements();
-            return true;
+            return this.entityMapper.toDto(entityList);
         } catch (Throwable var20) {
             var7 = var20;
             throw var20;
@@ -201,12 +215,15 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
         return SqlHelper.retBool(Integer.valueOf(this.baseMapper.delete(eWrapper)));
     }
 
-    public boolean removeByIds(Collection<? extends Serializable> idList) {
+    public boolean removeByIds(List<? extends Serializable> idList) {
         return SqlHelper.retBool(Integer.valueOf(this.baseMapper.deleteBatchIds(idList)));
     }
 
-    public boolean updateById(D entity) {
-        return this.retBool(Integer.valueOf(this.baseMapper.updateById(this.entityMapper.toEntity(entity))));
+    public D updateById(D dto) {
+        E entity = this.entityMapper.toEntity(dto);
+        entity.setUpdDt(LocalDateTime.now());
+        this.baseMapper.updateById(entity);
+        return dto;
     }
 
     public boolean update(D entity, Wrapper<D> updateWrapper) {
@@ -218,7 +235,7 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
     @Transactional(
         rollbackFor = {Exception.class}
     )
-    public boolean updateBatchById(Collection<D> entityList, int batchSize) {
+    public boolean updateBatchById(List<D> entityList, int batchSize) {
         Assert.notEmpty(entityList, "error: entityList must not be empty", new Object[0]);
         String sqlStatement = this.sqlStatement(SqlMethod.UPDATE_BY_ID);
         SqlSession batchSqlSession = this.sqlSessionBatch();
@@ -262,11 +279,11 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
         return this.entityMapper.toDto(this.baseMapper.selectById(id));
     }
 
-    public Collection<D> listByIds(Collection<? extends Serializable> idList) {
+    public List<D> listByIds(List<? extends Serializable> idList) {
         return this.entityMapper.toDto(this.baseMapper.selectBatchIds(idList));
     }
 
-    public Collection<D> listByMap(Map<String, Object> columnMap) {
+    public List<D> listByMap(Map<String, Object> columnMap) {
         return this.entityMapper.toDto(this.baseMapper.selectByMap(columnMap));
     }
 
@@ -294,15 +311,13 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
 
     public IPage<D> page(Pageable pageable, Wrapper<D> queryWrapper) {
         Wrapper<E> wrapper = Wrappers.query(this.entityMapper.toEntity(queryWrapper.getEntity()));
-        IPage<E> eiPage = new Page<E>();
-        eiPage.setCurrent(pageable.getPageNumber());
-        eiPage.setSize(pageable.getPageNumber());
-        //eiPage.setOrders(page.orders());
+        Page<E> eiPage = PageUtil.pageableToPage(pageable);
         IPage<E> eiPage1 = this.baseMapper.selectPage(eiPage, wrapper);
-        Page<D> page = new Page<D>();
+        Page<D> page = new Page(pageable.getPageNumber(), pageable.getPageSize());
         page.setTotal(eiPage1.getTotal());
         page.setPages(eiPage1.getPages());
         page.setRecords(this.entityMapper.toDto(eiPage1.getRecords()));
+
         return page;
     }
 
@@ -329,4 +344,5 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
     public <V> V getObj(Wrapper<D> queryWrapper, Function<? super Object, V> mapper) {
         return SqlHelper.getObject(this.log, this.listObjs(queryWrapper, mapper));
     }
+
 }

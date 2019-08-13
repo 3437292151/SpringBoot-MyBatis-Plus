@@ -31,5 +31,5 @@ public interface McrTDictDao extends BaseMapper<McrTDict>{
     //根据条件查询
     List<McrTDict> selectByCols(McrTDict mcrTDict);
     //根据ID查询
-    List<McrTDict> selectById(List<McrTDict> mcrTDicts);
+    List<McrTDict> selectByIdArray(List<McrTDict> mcrTDicts);
 }

@@ -50,7 +50,7 @@
 
   </select>
 
-    <select id="selectById" resultMap="BaseResultMap" parameterType="java.util.List">
+    <select id="selectByIdArray" resultMap="BaseResultMap" >
         select
         <include refid="Base_Column_List" />
         from mcr_t_dict
