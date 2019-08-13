@@ -22,6 +22,7 @@ import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -291,13 +292,14 @@ public class ServiceImpl<DAO extends BaseMapper<E>, Mapper extends EntityMapper<
         return this.entityMapper.toDto(this.baseMapper.selectList(wrapper));
     }
 
-    public IPage<D> page(IPage<D> page, Wrapper<D> queryWrapper) {
+    public IPage<D> page(Pageable pageable, Wrapper<D> queryWrapper) {
         Wrapper<E> wrapper = Wrappers.query(this.entityMapper.toEntity(queryWrapper.getEntity()));
-        Page<E> eiPage = new Page<E>();
-        eiPage.setCurrent(page.getCurrent());
-        eiPage.setSize(page.getPages());
-        eiPage.setOrders(page.orders());
+        IPage<E> eiPage = new Page<E>();
+        eiPage.setCurrent(pageable.getPageNumber());
+        eiPage.setSize(pageable.getPageNumber());
+        //eiPage.setOrders(page.orders());
         IPage<E> eiPage1 = this.baseMapper.selectPage(eiPage, wrapper);
+        Page<D> page = new Page<D>();
         page.setTotal(eiPage1.getTotal());
         page.setPages(eiPage1.getPages());
         page.setRecords(this.entityMapper.toDto(eiPage1.getRecords()));

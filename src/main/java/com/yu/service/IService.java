@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.yu.service.mapper.EntityMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface IService<D, E> {
@@ -94,10 +95,10 @@ public interface IService<D, E> {
         return this.list(Wrappers.emptyWrapper());
     }
 
-    IPage<D> page(IPage<D> var1, Wrapper<D> var2);
+    IPage<D> page(Pageable pageable, Wrapper<D> var2);
 
-    default IPage<D> page(IPage<D> page) {
-        return this.page(page, Wrappers.emptyWrapper());
+    default IPage<D> page(Pageable pageable) {
+        return this.page(pageable, Wrappers.emptyWrapper());
     }
 
     List<Map<String, Object>> listMaps(Wrapper<D> var1);

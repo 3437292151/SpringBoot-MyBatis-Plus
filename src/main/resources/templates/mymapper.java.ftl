@@ -1,7 +1,9 @@
-package ${package.Mapper};
+package ${package.Service}.mapper;
 
 import ${package.Entity}.${entity};
-import ${superMapperClassPackage};
+import ${package.Service}.dto.${entity}DTO;
+
+import org.mapstruct.Mapper;
 
 /**
  * <p>
@@ -11,10 +13,11 @@ import ${superMapperClassPackage};
  * @author ${author}
  * @since ${date}
  */
+@Mapper(componentModel = "spring", uses = {})
 <#if kotlin>
 interface ${table.mapperName} : ${superMapperClass}<${entity}>
 <#else>
-public interface ${table.mapperName} extends ${superMapperClass}<${entity}> {
+public interface ${table.mapperName} extends ${cfg.superServiceMapperClass}<${entity}DTO, ${entity}> {
 
 }
 </#if>

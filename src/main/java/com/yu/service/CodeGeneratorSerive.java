@@ -39,14 +39,13 @@ public class CodeGeneratorSerive {
     @Autowired
     private InjectionConfig injectionConfig;
 
+    // 代码生成器
     public void getAutoGenerator(){
-        String property = System.getProperty("user.dir");
-        // 代码生成器
+
         AutoGenerator mpg = new AutoGenerator();
         mpg.setGlobalConfig(globalConfig);
         mpg.setDataSource(dataSourceConfig);
         mpg.setPackageInfo(packageConfig);
-
 
         mpg.setCfg(injectionConfig);
 

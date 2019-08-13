@@ -13,7 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Auther: yuchanglong
@@ -54,7 +56,7 @@ public class CodeGeneratorConfig {
     public PackageConfig getPackageConfig(){
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setModuleName("");
+        pc.setModuleName(null);
         pc.setParent("com.yu");
         pc.setEntity("domain");
         pc.setController("web.rest");
@@ -69,7 +71,12 @@ public class CodeGeneratorConfig {
         InjectionConfig cfg = new InjectionConfig() {
             @Override
             public void initMap() {
-                // to do nothing
+                Map<String, Object> map = new HashMap<>();
+                map.put("superServiceMapperClass", "EntityMapper");
+                map.put("superServiceMapperClassPackage","com.yu.service.mapper");
+                map.put("",this.getConfig());
+
+                this.setMap(map);
             }
         };
 
@@ -87,18 +94,21 @@ public class CodeGeneratorConfig {
                         + tableInfo.getEntityName() + "Dao" + StringPool.DOT_XML;
             }
         });
-        templatePath = "/templates/mymapper.java.ftl";
+        templatePath = "/templates/myDao.java.ftl";
 
         // 自定义配置会被优先输出
         focList.add(new FileOutConfig(templatePath) {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return property + "/src/main/" +
+               String out = property + "/src/main/java/" +
                         getPackageConfig().getParent().replace(".","/")
                         + "/" +
                         getPackageConfig().getMapper().replace(".","/")
+                        + "/"
                         + tableInfo.getEntityName() + "Dao" + StringPool.DOT_JAVA;
+                System.out.println(out);
+                return out;
             }
         });
 
@@ -109,12 +119,32 @@ public class CodeGeneratorConfig {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return property + "/src/main/" +
+                String out = property + "/src/main/java/" +
                         getPackageConfig().getParent().replace(".","/")
                         + "/"
                         + getPackageConfig().getService().replace(".","/")
-                        + "/dto"
+                        + "/dto/"
                         + tableInfo.getEntityName() + "DTO" + StringPool.DOT_JAVA;
+                System.out.println(out);
+                return out;
+            }
+        });
+
+        templatePath = "/templates/mymapper.java.ftl";
+
+        // 自定义配置会被优先输出
+        focList.add(new FileOutConfig(templatePath) {
+            @Override
+            public String outputFile(TableInfo tableInfo) {
+                // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
+                String out = property + "/src/main/java/" +
+                        getPackageConfig().getParent().replace(".","/")
+                        + "/" +
+                        getPackageConfig().getService().replace(".","/")
+                        + "/mapper/"
+                        + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_JAVA;
+                System.out.println(out);
+                return out;
             }
         });
 
@@ -130,6 +160,7 @@ public class CodeGeneratorConfig {
 
         templateConfig.setService("/templates/myservice.java");
         templateConfig.setServiceImpl("/templates/myserviceImpl.java");
+        templateConfig.setMapper(null);
         templateConfig.setXml(null);
         return templateConfig;
    }

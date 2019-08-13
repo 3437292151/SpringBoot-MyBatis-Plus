@@ -2,9 +2,9 @@ package ${package.ServiceImpl};
 
 import ${package.Entity}.${entity};
 import ${package.Service}.dto.${entity}DTO;
-import ${package.Mapper}.${table.mapperName};
+import ${package.Mapper}.${entity}Dao;
 import ${package.Service}.${table.serviceName};
-import ${superServiceImplClassPackage};
+import ${cfg.superServiceMapperClassPackage}.${cfg.superServiceMapperClass};
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 <#if kotlin>
-open class ${table.serviceImplName} : ${superServiceImplClass}<${table.mapperName}, EntityMapper, ${entity}DTO, ${entity}>(), ${table.serviceName}<${entity}DTO, ${entity}> {
+open class ${table.serviceImplName} : ${superServiceImplClass}<${entity}Dao, ${cfg.superServiceMapperClass}<${entity}DTO, ${entity}>, ${entity}DTO, ${entity}>(), ${table.serviceName} {
 
 }
 <#else>
-public class ${table.serviceImplName} extends ${superServiceImplClass}<${table.mapperName}, EntityMapper, ${entity}DTO, ${entity}> implements ${table.serviceName}<${entity}DTO, ${entity}> {
+public class ${table.serviceImplName} extends ${superServiceImplClass}<${entity}Dao, ${cfg.superServiceMapperClass}<${entity}DTO, ${entity}>, ${entity}DTO, ${entity}> implements ${table.serviceName} {
 
 }
 </#if>
